@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# This script comes with ABSOLUTELY NO WARRANTY, use at own risk
+# Copyright (C) 2020 Osiris Alejandro Gomez <osiris@gcoop.coop>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# shellcheck disable=SC2016
+
+LOG='krb5.log'
+
+markdown()
+{
+cat << EOF
+---
+fontsize: 8pt
+code-block-font-size: 8pt
+classoption: landscape
+---
+EOF
+}
+
+code()
+{
+  printf "\\n\\n%s\\n\\n" '```'
+}
+
+title1()
+{
+  printf "\\n# %s\\n\\n" "$1"
+}
+
+title2()
+{
+  printf "\\n## %s\\n\\n" "$1"
+}
+
+get_error()
+{
+  case "$1" in
+    0x0010)
+      echo "FATAL"
+      ;;
+    0x0020)
+      echo "CRITICAL"
+      ;;
+    0x0040)
+      echo "SERIOUS"
+      ;;
+  esac
+}
+
+[[ ! -z "$1" ]] && LOG="$1"
+[[ ! -e "$1" ]] && exit 1
+
+markdown
+title1 "FILE: $LOG"
+title2 'KRB5 ERRORS'
+code
+
+grep -oE '1765[0-9]+' "$LOG" \
+  | grep -vP '[^\x00-\x7F]'  \
+  | sort                     \
+  | while read -r E
+    do
+      krb5-error "$E"
+    done   \
+  | uniq -c \
+  | sort -nr \
+  | barra
+
+code
+echo
+
+for E in 0x0010 0x0020 0x0040
+do
+  ERROR="$(get_error $E)"
+  TMP="$(mktemp)"
+  grep "$E" "$LOG"    \
+    | cut -d '[' -f6- \
+    | sort            \
+    | uniq -c         \
+    | sort -nr        > "$TMP"
+
+  if [[ -s "$TMP" ]]
+  then
+    title2 "KRB5 $ERROR ERRORS"
+    code
+    cat "$TMP"
+    code
+  fi
+
+done

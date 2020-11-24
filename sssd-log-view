@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# This script comes with ABSOLUTELY NO WARRANTY, use at own risk
+# Copyright (C) 2019 Osiris Alejandro Gomez <osiris@gcoop.coop>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# shellcheck disable=SC2016
+
+markdown()
+{
+cat << EOF
+---
+fontsize: 8pt
+code-block-font-size: 8pt
+classoption: landscape
+---
+EOF
+}
+
+code()
+{
+  printf "\\n\\n%s\\n\\n" '```'
+}
+
+title1()
+{
+  printf "\\n# %s\\n\\n" "$1"
+}
+
+title2()
+{
+  printf "\\n## %s\\n\\n" "$1"
+}
+
+get_error()
+{
+  case "$1" in
+    0x0010)
+      echo "FATAL"
+      ;;
+    0x0020)
+      echo "CRITICAL"
+      ;;
+    0x0040)
+      echo "SERIOUS"
+      ;;
+  esac
+}
+
+[[ -z "$1" ]] && exit 1
+[[ -e "$1" ]] || exit 1
+
+LOG="$1"
+NAME="$(basename "$1" .log)"
+
+grep_log()
+{
+  grep "$1" "$LOG"    \
+    | cut -c 2-25,27- \
+    | while read -r W M D T Y _ _ LEVEL MSG
+  do
+    DATE=$(date -d "$W $M $D $T $Y" '+%F %T')
+    printf "%s %s %s\\n" "$DATE" "$LEVEL" "$MSG"
+  done
+}
+
+grep_log_total()
+{
+  grep "$1" "$LOG"    \
+    | cut -c 2-25,27- \
+    | cut -c -200     \
+    | while read -r W M D T Y _ _ LEVEL MSG
+  do
+    DATE=$(date -d "$W $M $D $T $Y" '+%F' 2>/dev/null)
+    [[ "$MSG" =~ 'Could not add member' ]] && MSG="$(echo "$MSG" | cut -d= -f1)"
+    echo "$MSG"
+    printf "%s %s\\n" "$DATE" "$MSG" >> "$NAME-$1.log"
+  done | sort | uniq -c | sort -nr
+}
+
+true > "$NAME-0x0010.log"
+true > "$NAME-0x0020.log"
+true > "$NAME-0x0040.log"
+
+markdown
+
+title1 "FILE: $LOG"
+
+title2 '0x0010 SSSD FATAL FAILURES'
+code
+grep_log_total 0x0010
+code
+
+title2 '0x0020 SSSD CRITICAL FAILURES'
+code
+grep_log_total 0x0020
+code
+
+title2 '0x0040 SSSD SERIOUS FAILURES'
+code
+grep_log_total 0x0040
+code
