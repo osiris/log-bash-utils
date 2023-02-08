@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# This script comes with ABSOLUTELY NO WARRANTY, use at own risk
+# Copyright (C) 2023 Osiris Alejandro Gomez <osiux@osiux.com>
+# Copyright (C) 2023 Osiris Alejandro Gomez <osiris@gcoop.coop>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# timestamp: Feb 08 08:42:16
+# system:    sipa.ipa.example.com
+# service:   krb5kdc
+# pid:       [51576]
+# level:     (info):
+# message:   TGS_REQ (8 etypes {18 17 20 19 16 23 25 26})
+# ip:        10.10.134.104:                                  awk $17
+# message:   ISSUE: authtime
+# authtime:  1675856536,                                     awk $20
+# message:   etypes {rep=18 tkt=18 ses=18},
+# username:  4376@EXAMPLE.COM                                awk $25
+# message:   for
+# hostname:  host/wst049.IPA.EXAMPLE.COM@IPA.EXAMPLE.COM     awk $27
+
+[[ -n "$DATE"   ]] || DATE="$(date +%F)"
+[[ -n "$MONTH"  ]] || MONTH="$(date -d "$DATE" +%b)"
+[[ -n "$DAY"    ]] || DAY="$(date -d "$DATE" +%d)"
+[[ -n "$LOG"    ]] || LOG='krb5kdc.log'
+[[ -n "$PREFIX" ]] || PREFIX='wst'
+
+MONTH="${MONTH^}"
+
+[[ -n "$REGEX" ]] || \
+  REGEX="^$MONTH $DAY.*TGS_REQ.*ISSUE: authtime.*[0-9]+@.*host\/$PREFIX"
+
+awk "/$REGEX/ {print \$17,\$20,\$25,\$27}" "$LOG" \
+  | while read -r IP EPOC USR HOST
+    do
+
+      HOST="${HOST#*/}"
+      HOST="$(echo "$HOST" | cut -d. -f1)"
+      TIME="$(date -d "@${EPOC/,}" +%T)"
+
+      printf "%s %s %s %s %-15s\\n" \
+             "$DATE" "$TIME" "${USR%@*}" "$HOST" "${IP/:}"
+
+    done
