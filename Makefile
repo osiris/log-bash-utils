@@ -1,6 +1,9 @@
 SHELL=/bin/bash
 DIR_BIN ?= /usr/bin
 
+syntax-check:
+	file --mime-type * | grep shellscript | tr -d ':' | while read F _;do shellcheck $$F;done
+
 install:
 	install -m 0755 -v auth-log-view    "$(DIR_BIN)/auth-log-view"
 	install -m 0755 -v barra            "$(DIR_BIN)/barra"
