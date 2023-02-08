@@ -53,5 +53,4 @@ EOF
 [[ "$1" =~ [0-9]+ ]] && GREP_OPTION='-w'
 [[ "$1" =~ [a-z]+ ]] && GREP_OPTION='-i'
 
-echo "$PAM_ERRORS" | grep $GREP_OPTION "$1"
-
+echo "$PAM_ERRORS" | grep "$GREP_OPTION" "$1"
