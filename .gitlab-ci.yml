@@ -4,6 +4,8 @@
 image: koalaman/shellcheck-alpine:stable
 
 before_script:
+  - command -v bash
+  - bash --version
   - shellcheck --version
   - apk update && apk add file grep make
 
