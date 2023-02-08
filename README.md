@@ -50,6 +50,16 @@ krb5-log-view krb5_child.log
 
 ```
 
+### `krb5kdc-authtime`
+
+Extract _authime_, _username_, _hostname_ and _IP_ from `krb5kdc.log`
+
+```bash
+
+krb5kdc-authtime krb5kdc.log
+
+```
+
 ### `pam-error`
 
 Find and show PAM error code description
