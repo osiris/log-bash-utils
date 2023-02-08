@@ -175,5 +175,5 @@ EOF
 )
 
 ERROR='.*'
-[[ ! -z "$1" ]] && ERROR="${1//-/}"
+[[ -z "$1" ]] || ERROR="${1//-/}"
 echo "$KRB_ERRORS" | grep -E "$ERROR"
