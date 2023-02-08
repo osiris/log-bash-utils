@@ -1,4 +1,4 @@
-SHELL=/bin/bash
+SHELL   ?= $$(command -v bash)
 DIR_BIN ?= /usr/bin
 
 syntax-check:
