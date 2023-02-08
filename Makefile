@@ -1,4 +1,4 @@
-SHELL   := /usr/bin/bash
+SHELL   := /bin/bash
 DIR_BIN ?= /usr/bin
 
 syntax-check:
