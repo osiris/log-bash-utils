@@ -4,10 +4,10 @@
 image: koalaman/shellcheck-alpine:stable
 
 before_script:
+  - shellcheck --version
+  - apk update && apk add file grep make bash
   - command -v bash
   - bash --version
-  - shellcheck --version
-  - apk update && apk add file grep make
 
 stages:
   - shellcheck
