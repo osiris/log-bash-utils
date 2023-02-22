@@ -33,15 +33,17 @@
 # message:   for
 # hostname:  host/wst049.IPA.EXAMPLE.COM@IPA.EXAMPLE.COM     awk $27
 
-[[ -n "$MONTH"  ]] || MONTH="$(date -d "$DATE" +%b)"
-[[ -n "$DAY"    ]] || DAY="$(date -d "$DATE" +%d)"
-[[ -n "$LOG"    ]] || LOG='krb5kdc.log'
-[[ -n "$PREFIX" ]] || PREFIX='wst'
+[[ -n "$BASH_DEBUG" ]] && set -x
 [[ -n "$DLNG"       ]] || DLNG='en_US.UTF-8'
 [[ -n "$DATE"       ]] || DATE="$(date +%F)"
 [[ -n "$MONTH"      ]] || MONTH="$(LC_ALL="$DLNG" date -d "$DATE" +%b)"
+[[ -n "$DAY"        ]] || DAY="$(date -d "$DATE" +%d)"
+[[ -n "$LOG"        ]] || LOG='krb5kdc.log'
+[[ -n "$PREFIX"     ]] || PREFIX='wst'
 [[ -n "$FILTER"     ]] || FILTER='[a-z0-9]+'
+[[ -z "$1"          ]] || LOG="$1"
 [[ -z "$2"          ]] || FILTER="$2"
+[[ -e "$LOG"        ]] || exit 1
 
 MONTH="${MONTH^}"
 
