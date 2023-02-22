@@ -38,11 +38,13 @@
 [[ -n "$DAY"    ]] || DAY="$(date -d "$DATE" +%d)"
 [[ -n "$LOG"    ]] || LOG='krb5kdc.log'
 [[ -n "$PREFIX" ]] || PREFIX='wst'
+[[ -n "$FILTER"     ]] || FILTER='[a-z0-9]+'
+[[ -z "$2"          ]] || FILTER="$2"
 
 MONTH="${MONTH^}"
 
 [[ -n "$REGEX" ]] || \
-  REGEX="^$MONTH $DAY.*TGS_REQ.*ISSUE: authtime.*[0-9]+@.*host\/$PREFIX"
+REGEX="^$MONTH $DAY.*TGS_REQ.*ISSUE: authtime.*$FILTER+@.*host\/$PREFIX"
 
 awk "/$REGEX/ {print \$17,\$20,\$25,\$27}" "$LOG" \
   | while IFS=' ' read -r IP EPOC USR H
